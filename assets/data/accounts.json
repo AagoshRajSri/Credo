@@ -1,0 +1,32 @@
+[
+  {
+    "id": "acc_001",
+    "name": "HDFC Savings",
+    "bank_name": "HDFC Bank",
+    "type": "savings",
+    "balance": 124850.75,
+    "last_four_digits": "4821",
+    "color_hex": "#7C3AED",
+    "updated_at": "2026-09-22T12:00:00Z"
+  },
+  {
+    "id": "acc_002",
+    "name": "ICICI Platinum",
+    "bank_name": "ICICI Bank",
+    "type": "credit",
+    "balance": -18340.00,
+    "last_four_digits": "9173",
+    "color_hex": "#06B6D4",
+    "updated_at": "2026-09-22T12:00:00Z"
+  },
+  {
+    "id": "acc_003",
+    "name": "SBI Savings",
+    "bank_name": "State Bank of India",
+    "type": "savings",
+    "balance": 56200.00,
+    "last_four_digits": "3340",
+    "color_hex": "#3B82F6",
+    "updated_at": "2026-09-22T12:00:00Z"
+  }
+]

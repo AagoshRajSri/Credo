@@ -1,0 +1,167 @@
+[
+  {
+    "id": "txn_001",
+    "account_id": "acc_002",
+    "merchant": "Swiggy",
+    "amount": 349.00,
+    "is_credit": false,
+    "category": "food",
+    "date": "2026-09-22T19:30:00Z",
+    "note": "Dinner order",
+    "icon_emoji": "🍔"
+  },
+  {
+    "id": "txn_002",
+    "account_id": "acc_001",
+    "merchant": "Salary Credit",
+    "amount": 95000.00,
+    "is_credit": true,
+    "category": "other",
+    "date": "2026-09-01T09:00:00Z",
+    "note": "September salary",
+    "icon_emoji": "💰"
+  },
+  {
+    "id": "txn_003",
+    "account_id": "acc_002",
+    "merchant": "Amazon",
+    "amount": 2499.00,
+    "is_credit": false,
+    "category": "shopping",
+    "date": "2026-09-21T14:15:00Z",
+    "note": "Wireless earbuds",
+    "icon_emoji": "🛍️"
+  },
+  {
+    "id": "txn_004",
+    "account_id": "acc_002",
+    "merchant": "Netflix",
+    "amount": 649.00,
+    "is_credit": false,
+    "category": "entertainment",
+    "date": "2026-09-20T00:00:00Z",
+    "note": "Monthly subscription",
+    "icon_emoji": "🎬"
+  },
+  {
+    "id": "txn_005",
+    "account_id": "acc_002",
+    "merchant": "Uber",
+    "amount": 185.00,
+    "is_credit": false,
+    "category": "transport",
+    "date": "2026-09-19T08:45:00Z",
+    "note": "Office commute",
+    "icon_emoji": "🚗"
+  },
+  {
+    "id": "txn_006",
+    "account_id": "acc_002",
+    "merchant": "Zomato",
+    "amount": 520.00,
+    "is_credit": false,
+    "category": "food",
+    "date": "2026-09-18T20:00:00Z",
+    "note": "Weekend brunch",
+    "icon_emoji": "🍕"
+  },
+  {
+    "id": "txn_007",
+    "account_id": "acc_001",
+    "merchant": "BSNL Broadband",
+    "amount": 999.00,
+    "is_credit": false,
+    "category": "utilities",
+    "date": "2026-09-15T10:00:00Z",
+    "note": "Monthly internet bill",
+    "icon_emoji": "📡"
+  },
+  {
+    "id": "txn_008",
+    "account_id": "acc_002",
+    "merchant": "BookMyShow",
+    "amount": 900.00,
+    "is_credit": false,
+    "category": "entertainment",
+    "date": "2026-09-14T17:30:00Z",
+    "note": "Movie tickets × 2",
+    "icon_emoji": "🎟️"
+  },
+  {
+    "id": "txn_009",
+    "account_id": "acc_002",
+    "merchant": "Apollo Pharmacy",
+    "amount": 430.00,
+    "is_credit": false,
+    "category": "health",
+    "date": "2026-09-13T11:00:00Z",
+    "note": "Vitamins",
+    "icon_emoji": "💊"
+  },
+  {
+    "id": "txn_010",
+    "account_id": "acc_002",
+    "merchant": "Myntra",
+    "amount": 1799.00,
+    "is_credit": false,
+    "category": "shopping",
+    "date": "2026-09-12T15:00:00Z",
+    "note": "Casual shirt",
+    "icon_emoji": "👕"
+  },
+  {
+    "id": "txn_011",
+    "account_id": "acc_002",
+    "merchant": "Spotify",
+    "amount": 119.00,
+    "is_credit": false,
+    "category": "entertainment",
+    "date": "2026-09-10T00:00:00Z",
+    "note": "Music subscription",
+    "icon_emoji": "🎵"
+  },
+  {
+    "id": "txn_012",
+    "account_id": "acc_001",
+    "merchant": "HDFC Cashback",
+    "amount": 250.00,
+    "is_credit": true,
+    "category": "other",
+    "date": "2026-09-08T14:00:00Z",
+    "note": "Quarterly cashback",
+    "icon_emoji": "💳"
+  },
+  {
+    "id": "txn_013",
+    "account_id": "acc_002",
+    "merchant": "MakeMyTrip",
+    "amount": 8500.00,
+    "is_credit": false,
+    "category": "travel",
+    "date": "2026-08-30T10:00:00Z",
+    "note": "Flight to Mumbai",
+    "icon_emoji": "✈️"
+  },
+  {
+    "id": "txn_014",
+    "account_id": "acc_002",
+    "merchant": "Swiggy Instamart",
+    "amount": 640.00,
+    "is_credit": false,
+    "category": "food",
+    "date": "2026-08-28T19:00:00Z",
+    "note": "Grocery delivery",
+    "icon_emoji": "🛒"
+  },
+  {
+    "id": "txn_015",
+    "account_id": "acc_002",
+    "merchant": "PhonePe",
+    "amount": 2000.00,
+    "is_credit": false,
+    "category": "other",
+    "date": "2026-08-25T16:00:00Z",
+    "note": "UPI transfer",
+    "icon_emoji": "📱"
+  }
+]

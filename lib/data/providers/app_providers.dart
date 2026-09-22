@@ -1,0 +1,90 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../repositories/transactions_repository.dart';
+import '../repositories/accounts_repository.dart';
+import '../repositories/credit_score_repository.dart';
+import '../models/transaction.dart';
+import '../models/account.dart';
+import '../models/credit_score_snapshot.dart';
+import '../services/analytics_isolate.dart';
+import '../services/exchange_rate_service.dart';
+
+// ── Debug: simulate offline ───────────────────────────────────────────────
+
+/// Toggling this to `true` clears all Hive caches and prevents asset loading,
+/// proving the offline fallback path.  Flip it via the debug drawer in Phase 9.
+final simulateOfflineProvider = StateProvider<bool>((ref) => false);
+
+// ── Repository providers ──────────────────────────────────────────────────
+
+final transactionsRepositoryProvider = Provider<TransactionsRepository>((ref) {
+  final offline = ref.watch(simulateOfflineProvider);
+  return TransactionsRepository(simulateOffline: offline);
+});
+
+final accountsRepositoryProvider = Provider<AccountsRepository>((ref) {
+  final offline = ref.watch(simulateOfflineProvider);
+  return AccountsRepository(simulateOffline: offline);
+});
+
+final creditScoreRepositoryProvider = Provider<CreditScoreRepository>((ref) {
+  final offline = ref.watch(simulateOfflineProvider);
+  return CreditScoreRepository(simulateOffline: offline);
+});
+
+// ── Data providers ────────────────────────────────────────────────────────
+
+/// All transactions, sorted newest-first.
+final transactionsProvider = FutureProvider<List<Transaction>>((ref) async {
+  final repo = ref.watch(transactionsRepositoryProvider);
+  return repo.getAll();
+});
+
+/// Transactions for a specific account ID.
+final accountTransactionsProvider =
+    FutureProvider.family<List<Transaction>, String>((ref, accountId) async {
+  final repo = ref.watch(transactionsRepositoryProvider);
+  return repo.getByAccount(accountId);
+});
+
+/// All accounts.
+final accountsProvider = FutureProvider<List<Account>>((ref) async {
+  final repo = ref.watch(accountsRepositoryProvider);
+  return repo.getAll();
+});
+
+/// Credit score history, oldest → newest.
+final scoreHistoryProvider =
+    FutureProvider<List<CreditScoreSnapshot>>((ref) async {
+  final repo = ref.watch(creditScoreRepositoryProvider);
+  return repo.getHistory();
+});
+
+/// The most recent credit score snapshot.
+final latestScoreProvider =
+    FutureProvider<CreditScoreSnapshot?>((ref) async {
+  final repo = ref.watch(creditScoreRepositoryProvider);
+  return repo.getLatest();
+});
+
+// ── Analytics provider (compute isolate) ─────────────────────────────────
+
+/// Spend analytics computed off the UI thread via [AnalyticsIsolate].
+final analyticsProvider = FutureProvider<AnalyticsResult>((ref) async {
+  final txnAsync = await ref.watch(transactionsProvider.future);
+  return AnalyticsIsolate.run(txnAsync);
+});
+
+// ── Live exchange rate provider (real REST call) ──────────────────────────
+
+/// Live USD→INR rate from open.er-api.com.
+/// On failure, returns null — the UI shows a "—" fallback gracefully.
+final exchangeRateProvider = FutureProvider<double?>((ref) async {
+  try {
+    final service = ExchangeRateService();
+    final response = await service.fetchRates();
+    return response.inrRate;
+  } catch (_) {
+    // Network unavailable — return null; UI shows cached/fallback value.
+    return null;
+  }
+});

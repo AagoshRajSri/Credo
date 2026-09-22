@@ -1,0 +1,54 @@
+name: credo
+description: "A CRED-level personal finance & credit health dashboard."
+publish_to: "none"
+version: 1.0.0+1
+
+environment:
+  sdk: ">=3.4.0 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # State management
+  flutter_riverpod: ^2.6.1
+  riverpod_annotation: ^2.3.5
+
+  # Navigation
+  go_router: ^14.6.2
+
+  # Networking
+  dio: ^5.7.0
+
+  # Local storage
+  hive: ^2.2.3
+  hive_flutter: ^1.1.0
+
+  # Charts
+  fl_chart: ^0.69.0
+
+  # UI / animations
+  shimmer: ^3.0.0
+  flutter_animate: ^4.5.0
+  google_fonts: ^6.2.1
+
+  # Utilities
+  intl: ^0.19.0
+  path_provider: ^2.1.4
+  uuid: ^4.5.1
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+  build_runner: ^2.4.12
+  riverpod_generator: ^2.4.3
+  hive_generator: ^2.0.1
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/data/accounts.json
+    - assets/data/transactions.json
+    - assets/data/credit_score_history.json
+  # Fonts are loaded via google_fonts package at runtime.
