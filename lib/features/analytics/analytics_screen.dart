@@ -10,6 +10,7 @@ import '../../data/services/analytics_isolate.dart';
 import '../../shared/widgets/gradient_background.dart';
 import '../../shared/widgets/shimmer_widgets.dart';
 import '../../shared/widgets/empty_state.dart';
+import 'widgets/category_budgets_section.dart';
 
 class AnalyticsScreen extends ConsumerWidget {
   const AnalyticsScreen({super.key});
@@ -94,6 +95,11 @@ class _AnalyticsBody extends ConsumerWidget {
                 // ── Donut chart — spend by category ─────────────────
                 const _SectionTitle(title: 'Spend by Category'),
                 _DonutChart(analytics: analytics),
+                const SizedBox(height: AppConstants.spacingL),
+
+                // ── Monthly Category Budgets ─────────────────────────
+                const _SectionTitle(title: 'Monthly Category Budgets'),
+                CategoryBudgetsSection(analytics: analytics),
                 const SizedBox(height: AppConstants.spacingL),
 
                 // ── Bar chart — monthly spend ────────────────────────

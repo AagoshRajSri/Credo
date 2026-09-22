@@ -45,6 +45,7 @@ Future<void> main() async {
     Hive.openBox<Transaction>(HiveBoxNames.transactions),
     Hive.openBox<CreditScoreSnapshot>(HiveBoxNames.scoreHistory),
     Hive.openBox<dynamic>(HiveBoxNames.appSettings),
+    Hive.openBox<double>(HiveBoxNames.budgets),
   ]);
 
   runApp(

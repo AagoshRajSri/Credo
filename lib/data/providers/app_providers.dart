@@ -2,9 +2,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../repositories/transactions_repository.dart';
 import '../repositories/accounts_repository.dart';
 import '../repositories/credit_score_repository.dart';
+import '../repositories/budget_repository.dart';
 import '../models/transaction.dart';
 import '../models/account.dart';
 import '../models/credit_score_snapshot.dart';
+import '../models/enums.dart';
 import '../services/analytics_isolate.dart';
 import '../services/exchange_rate_service.dart';
 
@@ -31,7 +33,37 @@ final creditScoreRepositoryProvider = Provider<CreditScoreRepository>((ref) {
   return CreditScoreRepository(simulateOffline: offline);
 });
 
+final budgetRepositoryProvider = Provider<BudgetRepository>((ref) {
+  return BudgetRepository();
+});
+
 // ── Data providers ────────────────────────────────────────────────────────
+
+/// Monthly category budgets notifier.
+class BudgetsNotifier extends AsyncNotifier<Map<TransactionCategory, double>> {
+  @override
+  Future<Map<TransactionCategory, double>> build() async {
+    final repo = ref.watch(budgetRepositoryProvider);
+    return repo.getBudgets();
+  }
+
+  Future<void> updateBudget(TransactionCategory category, double limit) async {
+    final repo = ref.read(budgetRepositoryProvider);
+    await repo.setBudget(category, limit);
+    state = AsyncData(await repo.getBudgets());
+  }
+
+  Future<void> resetToDefaults() async {
+    final repo = ref.read(budgetRepositoryProvider);
+    final defaults = await repo.resetDefaults();
+    state = AsyncData(defaults);
+  }
+}
+
+final budgetsProvider =
+    AsyncNotifierProvider<BudgetsNotifier, Map<TransactionCategory, double>>(() {
+  return BudgetsNotifier();
+});
 
 /// All transactions, sorted newest-first, mutable via AsyncNotifier.
 class TransactionsNotifier extends AsyncNotifier<List<Transaction>> {
