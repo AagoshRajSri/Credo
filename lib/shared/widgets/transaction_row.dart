@@ -50,17 +50,31 @@ class TransactionRow extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        transaction.merchant,
-                        style: Theme.of(context)
-                            .textTheme
-                            .bodyMedium
-                            ?.copyWith(
-                              color: CredoColors.textPrimary,
-                              fontWeight: FontWeight.w500,
+                      Row(
+                        children: [
+                          Flexible(
+                            child: Text(
+                              transaction.merchant,
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodyMedium
+                                  ?.copyWith(
+                                    color: CredoColors.textPrimary,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                             ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
+                          ),
+                          if (transaction.isFavorite) ...[
+                            const SizedBox(width: 4),
+                            const Icon(
+                              Icons.star_rounded,
+                              size: 14,
+                              color: CredoColors.warning,
+                            ),
+                          ],
+                        ],
                       ),
                       const SizedBox(height: 2),
                       Text(

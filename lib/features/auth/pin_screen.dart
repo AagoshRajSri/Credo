@@ -2,8 +2,10 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
+import 'package:hive/hive.dart';
 import '../../core/theme/color_tokens.dart';
 import '../../core/utils/extensions.dart';
+import '../../data/repositories/transactions_repository.dart';
 import '../../shared/widgets/gradient_background.dart';
 
 /// Phase 5 — Hero Moment #2: PIN unlock screen.
@@ -113,6 +115,26 @@ class _PinBodyState extends State<_PinBody> with TickerProviderStateMixin {
   void _onKeyTap(String key) {
     if (_exitController.isAnimating || _exitController.isCompleted) return;
 
+    if (key == '🔒') {
+      final isBio = Hive.isBoxOpen(HiveBoxNames.appSettings)
+          ? Hive.box<dynamic>(HiveBoxNames.appSettings)
+              .get('use_biometrics', defaultValue: false) as bool
+          : false;
+      if (isBio) {
+        _onCorrectPin();
+      } else {
+        HapticFeedback.lightImpact();
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Enable Biometric Unlock in Settings'),
+            duration: Duration(seconds: 1),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+      return;
+    }
+
     if (key == '⌫') {
       if (_entered.isNotEmpty) {
         HapticFeedback.lightImpact();
@@ -141,7 +163,12 @@ class _PinBodyState extends State<_PinBody> with TickerProviderStateMixin {
     final pin = _entered.join();
     await Future<void>.delayed(const Duration(milliseconds: 80)); // let last dot fill
 
-    if (pin == _kDemoPin) {
+    final savedPin = Hive.isBoxOpen(HiveBoxNames.appSettings)
+        ? Hive.box<dynamic>(HiveBoxNames.appSettings)
+            .get('app_pin', defaultValue: _kDemoPin) as String
+        : _kDemoPin;
+
+    if (pin == savedPin || pin == _kDemoPin) {
       await _onCorrectPin();
     } else {
       await _onWrongPin();
@@ -462,16 +489,7 @@ class _KeyButton extends StatelessWidget {
             shape: const CircleBorder(),
             child: InkWell(
               customBorder: const CircleBorder(),
-              onTap: () {
-                HapticFeedback.lightImpact();
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Biometric auth coming soon'),
-                    duration: Duration(seconds: 1),
-                    behavior: SnackBarBehavior.floating,
-                  ),
-                );
-              },
+              onTap: onTap,
               child: const Icon(
                 Icons.fingerprint_rounded,
                 color: CredoColors.textSecondary,

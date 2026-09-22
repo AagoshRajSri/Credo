@@ -11,6 +11,7 @@ import 'features/transactions/transaction_detail_screen.dart';
 import 'features/transactions/transaction_form_screen.dart';
 import 'features/transactions/transactions_screen.dart';
 import 'features/analytics/analytics_screen.dart';
+import 'features/settings/settings_screen.dart';
 import 'shared/widgets/credo_nav_bar.dart';
 
 // ── Route paths ──────────────────────────────────────────────────────────
@@ -21,6 +22,7 @@ abstract final class AppRoutes {
   static const String transactions = '/transactions';
   static const String transactionDetail = '/transaction/:id';
   static const String transactionForm = '/transaction-form';
+  static const String settings = '/settings';
   static const String analytics = '/analytics';
 }
 
@@ -91,6 +93,13 @@ final GoRouter appRouter = GoRouter(
         final transaction = state.extra as Transaction?;
         return TransactionFormScreen(existingTransaction: transaction);
       },
+    ),
+
+    // ── Settings (full screen modal) ──────────────────────────────────
+    GoRoute(
+      path: AppRoutes.settings,
+      name: 'settings',
+      builder: (_, __) => const SettingsScreen(),
     ),
 
     // ── Main shell with bottom navigation ─────────────────────────────

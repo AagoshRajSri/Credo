@@ -20,7 +20,16 @@ class TransactionsScreen extends ConsumerStatefulWidget {
 }
 
 class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
+  final _searchController = TextEditingController();
+  String _searchQuery = '';
   TransactionCategory? _selectedCategory;
+  bool _onlyFavorites = false;
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -53,15 +62,74 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
                   ),
                 ),
 
-                // ── Category filter chips ────────────────────────────
-                _CategoryFilterBar(
-                  selected: _selectedCategory,
-                  onSelected: (cat) =>
-                      setState(() => _selectedCategory = cat),
+                // ── Search bar ───────────────────────────────────────
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppConstants.spacingM,
+                  ),
+                  child: Container(
+                    height: 44,
+                    decoration: BoxDecoration(
+                      color: CredoColors.surfaceVariant,
+                      borderRadius:
+                          BorderRadius.circular(AppConstants.radiusMedium),
+                      border: Border.all(
+                        color: CredoColors.textDisabled,
+                        width: 0.5,
+                      ),
+                    ),
+                    child: TextField(
+                      controller: _searchController,
+                      onChanged: (val) =>
+                          setState(() => _searchQuery = val.trim().toLowerCase()),
+                      style: const TextStyle(
+                        color: CredoColors.textPrimary,
+                        fontSize: 14,
+                      ),
+                      decoration: InputDecoration(
+                        hintText: 'Search merchant, note, amount...',
+                        hintStyle: const TextStyle(
+                          color: CredoColors.textSecondary,
+                          fontSize: 14,
+                        ),
+                        prefixIcon: const Icon(
+                          Icons.search_rounded,
+                          color: CredoColors.textSecondary,
+                          size: 20,
+                        ),
+                        suffixIcon: _searchQuery.isNotEmpty
+                            ? IconButton(
+                                icon: const Icon(
+                                  Icons.close_rounded,
+                                  color: CredoColors.textSecondary,
+                                  size: 18,
+                                ),
+                                onPressed: () {
+                                  _searchController.clear();
+                                  setState(() => _searchQuery = '');
+                                },
+                              )
+                            : null,
+                        border: InputBorder.none,
+                        contentPadding:
+                            const EdgeInsets.symmetric(vertical: 10),
+                      ),
+                    ),
+                  ),
                 ),
                 const SizedBox(height: AppConstants.spacingS),
 
-                // ── List ─────────────────────────────────────────────
+                // ── Category & Favorites filter chips ────────────────
+                _CategoryFilterBar(
+                  selected: _selectedCategory,
+                  onlyFavorites: _onlyFavorites,
+                  onSelected: (cat) => setState(() => _selectedCategory = cat),
+                  onFavoritesToggled: () =>
+                      setState(() => _onlyFavorites = !_onlyFavorites),
+                ),
+                const SizedBox(height: AppConstants.spacingS),
+
+                // ── List with Pull-to-refresh ────────────────────────
                 Expanded(
                   child: txnAsync.when(
                     loading: () => ListView.builder(
@@ -73,62 +141,105 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
                       onRetry: () => ref.invalidate(transactionsProvider),
                     ),
                     data: (txns) {
-                      final filtered = _selectedCategory == null
-                          ? txns
-                          : txns
-                              .where(
-                                (t) => t.category == _selectedCategory,
-                              )
-                              .toList();
+                      final filtered = txns.where((t) {
+                        if (_onlyFavorites && !t.isFavorite) return false;
+                        if (_selectedCategory != null &&
+                            t.category != _selectedCategory) {
+                          return false;
+                        }
+                        if (_searchQuery.isNotEmpty) {
+                          final matchesMerchant = t.merchant
+                              .toLowerCase()
+                              .contains(_searchQuery);
+                          final matchesNote = t.note
+                                  ?.toLowerCase()
+                                  .contains(_searchQuery) ??
+                              false;
+                          final matchesCat = t.category.displayName
+                              .toLowerCase()
+                              .contains(_searchQuery);
+                          final matchesAmt =
+                              t.amount.toString().contains(_searchQuery);
+                          if (!matchesMerchant &&
+                              !matchesNote &&
+                              !matchesCat &&
+                              !matchesAmt) {
+                            return false;
+                          }
+                        }
+                        return true;
+                      }).toList();
 
                       if (filtered.isEmpty) {
+                        final hasFilter = _selectedCategory != null ||
+                            _onlyFavorites ||
+                            _searchQuery.isNotEmpty;
                         return EmptyState(
-                          emoji: '🧾',
-                          title: 'No transactions',
-                          subtitle: _selectedCategory == null
-                              ? 'Your transactions will appear here.'
-                              : 'No ${_selectedCategory!.displayName} transactions found.',
-                          action: _selectedCategory != null
-                              ? () => setState(
-                                    () => _selectedCategory = null,
-                                  )
+                          emoji: '🔍',
+                          title: 'No matching transactions',
+                          subtitle: hasFilter
+                              ? 'Try adjusting your search or active filters.'
+                              : 'Your transactions will appear here.',
+                          action: hasFilter
+                              ? () => setState(() {
+                                    _selectedCategory = null;
+                                    _onlyFavorites = false;
+                                    _searchQuery = '';
+                                    _searchController.clear();
+                                  })
                               : null,
-                          actionLabel: 'Clear filter',
+                          actionLabel: 'Clear filters',
                         );
                       }
 
-                      return ListView.builder(
-                        physics: const BouncingScrollPhysics(),
-                        padding:
-                            const EdgeInsets.only(bottom: 32),
-                        itemCount: filtered.length,
-                        itemBuilder: (context, i) {
-                          final txn = filtered[i];
-                          return Dismissible(
-                            key: ValueKey(txn.id),
-                            direction: DismissDirection.endToStart,
-                            background: Container(
-                              alignment: Alignment.centerRight,
-                              padding: const EdgeInsets.only(right: 24),
-                              color: CredoColors.error,
-                              child: const Icon(Icons.delete, color: Colors.white),
-                            ),
-                            onDismissed: (direction) {
-                              ref.read(transactionsProvider.notifier).remove(txn.id);
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text('Transaction deleted')),
-                              );
-                            },
-                            child: TransactionRow(
-                              transaction: txn,
-                              showDivider: i < filtered.length - 1,
-                              onTap: () => context.push(
-                                '/transaction/${txn.id}',
-                                extra: txn,
-                              ),
-                            ),
-                          );
+                      return RefreshIndicator(
+                        onRefresh: () async {
+                          ref.invalidate(transactionsProvider);
+                          await ref.read(transactionsProvider.future);
                         },
+                        color: CredoColors.accentViolet,
+                        backgroundColor: CredoColors.surfaceVariant,
+                        child: ListView.builder(
+                          physics: const AlwaysScrollableScrollPhysics(
+                            parent: BouncingScrollPhysics(),
+                          ),
+                          padding: const EdgeInsets.only(bottom: 32),
+                          itemCount: filtered.length,
+                          itemBuilder: (context, i) {
+                            final txn = filtered[i];
+                            return Dismissible(
+                              key: ValueKey(txn.id),
+                              direction: DismissDirection.endToStart,
+                              background: Container(
+                                alignment: Alignment.centerRight,
+                                padding: const EdgeInsets.only(right: 24),
+                                color: CredoColors.error,
+                                child: const Icon(
+                                  Icons.delete,
+                                  color: Colors.white,
+                                ),
+                              ),
+                              onDismissed: (direction) {
+                                ref
+                                    .read(transactionsProvider.notifier)
+                                    .remove(txn.id);
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text('Transaction deleted'),
+                                  ),
+                                );
+                              },
+                              child: TransactionRow(
+                                transaction: txn,
+                                showDivider: i < filtered.length - 1,
+                                onTap: () => context.push(
+                                  '/transaction/${txn.id}',
+                                  extra: txn,
+                                ),
+                              ),
+                            );
+                          },
+                        ),
                       );
                     },
                   ),
@@ -146,10 +257,14 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
 class _CategoryFilterBar extends StatelessWidget {
   const _CategoryFilterBar({
     required this.selected,
+    required this.onlyFavorites,
     required this.onSelected,
+    required this.onFavoritesToggled,
   });
   final TransactionCategory? selected;
+  final bool onlyFavorites;
   final ValueChanged<TransactionCategory?> onSelected;
+  final VoidCallback onFavoritesToggled;
 
   @override
   Widget build(BuildContext context) {
@@ -164,8 +279,20 @@ class _CategoryFilterBar extends StatelessWidget {
           _FilterChip(
             label: 'All',
             emoji: '📋',
-            selected: selected == null,
-            onTap: () => onSelected(null),
+            selected: selected == null && !onlyFavorites,
+            onTap: () {
+              onSelected(null);
+              if (onlyFavorites) onFavoritesToggled();
+            },
+          ),
+          Padding(
+            padding: const EdgeInsets.only(left: 8),
+            child: _FilterChip(
+              label: 'Favorites',
+              emoji: '⭐',
+              selected: onlyFavorites,
+              onTap: onFavoritesToggled,
+            ),
           ),
           ...TransactionCategory.values.map(
             (cat) => Padding(

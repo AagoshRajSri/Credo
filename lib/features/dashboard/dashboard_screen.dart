@@ -46,11 +46,24 @@ class _DashboardBody extends ConsumerWidget {
     final txnAsync = ref.watch(transactionsProvider);
     final rateAsync = ref.watch(exchangeRateProvider);
 
-    return CustomScrollView(
-      physics: const BouncingScrollPhysics(),
-      slivers: [
-        // ── Header ──────────────────────────────────────────────────
-        SliverToBoxAdapter(child: _Header(rateAsync: rateAsync)),
+    return RefreshIndicator(
+      onRefresh: () async {
+        ref.invalidate(transactionsProvider);
+        ref.invalidate(accountsProvider);
+        ref.invalidate(exchangeRateProvider);
+        ref.invalidate(latestScoreProvider);
+        ref.invalidate(scoreHistoryProvider);
+        await ref.read(transactionsProvider.future);
+      },
+      color: CredoColors.accentViolet,
+      backgroundColor: CredoColors.surfaceVariant,
+      child: CustomScrollView(
+        physics: const AlwaysScrollableScrollPhysics(
+          parent: BouncingScrollPhysics(),
+        ),
+        slivers: [
+          // ── Header ──────────────────────────────────────────────────
+          SliverToBoxAdapter(child: _Header(rateAsync: rateAsync)),
 
         // ── Credit Score Card ────────────────────────────────────────
         SliverToBoxAdapter(
@@ -140,7 +153,8 @@ class _DashboardBody extends ConsumerWidget {
         ),
         const SliverToBoxAdapter(child: SizedBox(height: 32)),
       ],
-    );
+    ),
+  );
   }
 }
 
@@ -183,15 +197,24 @@ class _Header extends StatelessWidget {
                 : _LiveRateBadge(inrPerUsd: rate),
           ),
           const SizedBox(width: 8),
-          // ── Notification bell ───────────────────────────────────
-          Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              color: CredoColors.surfaceVariant,
-              borderRadius: BorderRadius.circular(AppConstants.radiusMedium),
+          // ── Settings gear ───────────────────────────────────────
+          IconButton(
+            style: IconButton.styleFrom(
+              backgroundColor: CredoColors.surfaceVariant,
+              shape: RoundedRectangleBorder(
+                borderRadius:
+                    BorderRadius.circular(AppConstants.radiusMedium),
+              ),
+              fixedSize: const Size(40, 40),
+              padding: EdgeInsets.zero,
             ),
-            child: const Icon(Icons.notifications_outlined, size: 20),
+            icon: const Icon(
+              Icons.settings_outlined,
+              size: 20,
+              color: CredoColors.textPrimary,
+            ),
+            tooltip: 'Settings',
+            onPressed: () => context.push('/settings'),
           ),
         ],
       ),

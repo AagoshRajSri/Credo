@@ -23,12 +23,13 @@ class TransactionAdapter extends TypeAdapter<Transaction> {
       date: DateTime.fromMillisecondsSinceEpoch(fields[6] as int),
       note: fields[7] as String?,
       iconEmoji: fields[8] as String?,
+      isFavorite: fields[9] as bool? ?? false,
     );
   }
 
   @override
   void write(BinaryWriter writer, Transaction obj) {
-    writer.writeByte(9); // field count
+    writer.writeByte(10); // field count
     writer
       ..writeByte(0)
       ..write(obj.id)
@@ -47,7 +48,9 @@ class TransactionAdapter extends TypeAdapter<Transaction> {
       ..writeByte(7)
       ..write(obj.note)
       ..writeByte(8)
-      ..write(obj.iconEmoji);
+      ..write(obj.iconEmoji)
+      ..writeByte(9)
+      ..write(obj.isFavorite);
   }
 
   @override

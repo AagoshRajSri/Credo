@@ -14,6 +14,7 @@ class Transaction extends HiveObject {
     required this.date,
     this.note,
     this.iconEmoji,
+    this.isFavorite = false,
   });
 
   @HiveField(0)
@@ -45,6 +46,9 @@ class Transaction extends HiveObject {
   @HiveField(8)
   final String? iconEmoji;
 
+  @HiveField(9)
+  final bool isFavorite;
+
   /// Signed amount: negative for debits, positive for credits.
   double get signedAmount => isCredit ? amount : -amount;
 
@@ -58,6 +62,7 @@ class Transaction extends HiveObject {
     DateTime? date,
     String? note,
     String? iconEmoji,
+    bool? isFavorite,
   }) {
     return Transaction(
       id: id ?? this.id,
@@ -69,6 +74,7 @@ class Transaction extends HiveObject {
       date: date ?? this.date,
       note: note ?? this.note,
       iconEmoji: iconEmoji ?? this.iconEmoji,
+      isFavorite: isFavorite ?? this.isFavorite,
     );
   }
 
@@ -82,6 +88,7 @@ class Transaction extends HiveObject {
         date: DateTime.parse(json['date'] as String),
         note: json['note'] as String?,
         iconEmoji: json['icon_emoji'] as String?,
+        isFavorite: json['is_favorite'] as bool? ?? false,
       );
 
   Map<String, dynamic> toJson() => {
@@ -94,6 +101,7 @@ class Transaction extends HiveObject {
         'date': date.toIso8601String(),
         'note': note,
         'icon_emoji': iconEmoji,
+        'is_favorite': isFavorite,
       };
 
   @override

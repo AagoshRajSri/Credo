@@ -90,6 +90,16 @@ class TransactionsNotifier extends AsyncNotifier<List<Transaction>> {
     await repo.deleteTransaction(id);
     state = AsyncData(await repo.getAll());
   }
+
+  Future<void> toggleFavorite(String id) async {
+    final current = state.valueOrNull ?? [];
+    final index = current.indexWhere((t) => t.id == id);
+    if (index != -1) {
+      final target = current[index];
+      final updated = target.copyWith(isFavorite: !target.isFavorite);
+      await updateTx(updated);
+    }
+  }
 }
 
 final transactionsProvider =

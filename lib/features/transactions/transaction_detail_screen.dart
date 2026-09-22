@@ -138,12 +138,19 @@ class TransactionDetailScreen extends ConsumerWidget {
   }
 }
 
-class _DetailAppBar extends StatelessWidget {
+class _DetailAppBar extends ConsumerWidget {
   const _DetailAppBar({required this.transaction});
   final Transaction transaction;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final txns = ref.watch(transactionsProvider).valueOrNull ?? [];
+    final currentTx = txns.firstWhere(
+      (t) => t.id == transaction.id,
+      orElse: () => transaction,
+    );
+    final isFav = currentTx.isFavorite;
+
     return Padding(
       padding: const EdgeInsets.symmetric(
         horizontal: AppConstants.spacingS,
@@ -160,10 +167,20 @@ class _DetailAppBar extends StatelessWidget {
             style: context.textTheme.titleLarge,
           ),
           const Spacer(),
-          // Share / receipt placeholder
+          IconButton(
+            icon: Icon(
+              isFav ? Icons.star_rounded : Icons.star_outline_rounded,
+              color: isFav ? CredoColors.warning : CredoColors.textSecondary,
+              size: 24,
+            ),
+            tooltip: isFav ? 'Remove from favorites' : 'Mark as favorite',
+            onPressed: () {
+              ref.read(transactionsProvider.notifier).toggleFavorite(transaction.id);
+            },
+          ),
           IconButton(
             icon: const Icon(Icons.edit_outlined, size: 20),
-            onPressed: () => context.push('/transaction-form', extra: transaction),
+            onPressed: () => context.push('/transaction-form', extra: currentTx),
           ),
           IconButton(
             icon: const Icon(Icons.ios_share_outlined, size: 20),
