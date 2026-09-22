@@ -13,8 +13,15 @@ import 'data/adapters/savings_goal_adapter.dart';
 import 'data/repositories/transactions_repository.dart';
 import 'app.dart';
 
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
+
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
 
   // ── System UI ──────────────────────────────────────────────────────
   SystemChrome.setSystemUIOverlayStyle(

@@ -12,41 +12,25 @@ abstract final class HiveBoxNames {
   static const String savingsGoals = 'savings_goals_box';
 }
 
-/// Transactions repository.
-///
-/// Strategy: **asset-first, Hive-cache-write-through**.
-/// - On first run (empty Hive box): load from JSON asset, seed into Hive.
-/// - On subsequent runs: serve from Hive (fast, synchronous-ish).
-/// - When a real backend is wired (future): swap the asset load for a
-///   Dio call and keep the write-through pattern identical.
-///
-/// The "simulate offline" debug flag bypasses the asset load to prove
-/// the Hive cache path works in isolation.
+import 'package:cloud_firestore/cloud_firestore.dart';
+import '../models/transaction.dart';
+
 class TransactionsRepository {
-  TransactionsRepository({bool simulateOffline = false})
-      : _simulateOffline = simulateOffline;
+  TransactionsRepository({required this.userId});
+  final String userId;
 
-  final bool _simulateOffline;
-
-  Box<Transaction> get _box => Hive.box<Transaction>(HiveBoxNames.transactions);
+  CollectionReference<Map<String, dynamic>> get _collection =>
+      FirebaseFirestore.instance
+          .collection('users')
+          .doc(userId)
+          .collection('transactions');
 
   /// Returns all transactions, sorted newest-first.
   Future<List<Transaction>> getAll() async {
-    // If the cache is populated, return it immediately.
-    if (_box.isNotEmpty) {
-      return _sortedFromCache();
-    }
-
-    // DECISION: If simulateOffline is on, return empty list instead of
-    // loading from asset, to prove the empty-cache path works.
-    if (_simulateOffline) {
-      return [];
-    }
-
-    // First run — seed from JSON asset and cache in Hive.
-    final fromAsset = await LocalDataService.loadTransactions();
-    await _seedToHive(fromAsset);
-    return _sortedFromCache();
+    if (userId.isEmpty || userId == 'offline') return [];
+    
+    final snapshot = await _collection.orderBy('date', descending: true).get();
+    return snapshot.docs.map((doc) => Transaction.fromJson(doc.data())).toList();
   }
 
   /// Returns transactions for a specific [accountId].
@@ -55,35 +39,21 @@ class TransactionsRepository {
     return all.where((t) => t.accountId == accountId).toList();
   }
 
-  /// Clears the Hive cache (used in the debug "simulate offline" flow).
-  Future<void> clearCache() => _box.clear();
-
-  // ── Private helpers ────────────────────────────────────────────────
-  List<Transaction> _sortedFromCache() {
-    final items = _box.values.toList()
-      ..sort((a, b) => b.date.compareTo(a.date));
-    return items;
-  }
-
-  /// Adds a new transaction to the cache.
+  /// Adds a new transaction.
   Future<void> addTransaction(Transaction transaction) async {
-    await _box.put(transaction.id, transaction);
+    if (userId.isEmpty || userId == 'offline') return;
+    await _collection.doc(transaction.id).set(transaction.toJson());
   }
 
-  /// Updates an existing transaction in the cache.
+  /// Updates an existing transaction.
   Future<void> updateTransaction(Transaction transaction) async {
-    if (_box.containsKey(transaction.id)) {
-      await _box.put(transaction.id, transaction);
-    }
+    if (userId.isEmpty || userId == 'offline') return;
+    await _collection.doc(transaction.id).update(transaction.toJson());
   }
 
-  /// Deletes a transaction from the cache by ID.
+  /// Deletes a transaction by ID.
   Future<void> deleteTransaction(String id) async {
-    await _box.delete(id);
-  }
-
-  Future<void> _seedToHive(List<Transaction> items) async {
-    final map = {for (final t in items) t.id: t};
-    await _box.putAll(map);
+    if (userId.isEmpty || userId == 'offline') return;
+    await _collection.doc(id).delete();
   }
 }

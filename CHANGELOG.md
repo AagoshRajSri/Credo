@@ -103,3 +103,20 @@ Format: `[Phase N] Brief description — date`
 - Complete rewrite of README.md mapping tech stack, architecture, and Hero Moments to the project vision.
 - App build plan fully executed (Phases 1 through 10).
 - Ready for submission/demo.
+
+## [Phase 11-14] Advanced Features & Polish — 2026-09-22
+
+- **Manual Transactions**: Built `TransactionFormScreen` with custom type toggle, emoji category picker, and amount input.
+- **Swipe Actions & Re-categorization**: Added swipe-to-delete on `TransactionsScreen` and a live tap-to-re-categorize bottom sheet on `TransactionDetailScreen`.
+- **Monthly Category Budgeting**: Created `BudgetRepository` and providers. Added visual budget tracking section on the Analytics screen to track spending limits per category.
+- **Search & Filters**: Added robust search by merchant, note, and amount. Added horizontal filter chips for Categories and Favorites on `TransactionsScreen`.
+- **Savings Goals**: Created `SavingsGoal` model (typeId 5) and `GoalCard` with animated progress bars. Integrated into `DashboardScreen` and built a dedicated `SavingsGoalsScreen`.
+- **Settings Screen**: Added biometric toggle stub, PIN changer, offline simulation toggle, and data reset tools.
+- Fixed multiple UI layout issues, including FAB overlapping with custom navigation bar and trailing widgets in `ListTile`.
+
+## [Phase 16] The Real Data Layer (Firebase) — 2026-09-23
+
+- **Authentication**: Integrated `firebase_auth` with Riverpod. Built a dynamic `LoginScreen` and updated `GoRouter` to force unauthenticated users to log in.
+- **Cloud Firestore**: Completely refactored `TransactionsRepository` and `SavingsGoalRepository` to read/write directly to Cloud Firestore instead of local Hive storage.
+- **Data Privacy**: Scoped all database reads and writes to the authenticated user's `uid` (e.g., `users/{uid}/transactions/...`) to ensure complete multi-tenant SaaS architecture.
+- **Offline Resilience**: Maintained offline capability through Firestore's built-in offline caching logic.

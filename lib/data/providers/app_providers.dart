@@ -20,9 +20,11 @@ final simulateOfflineProvider = StateProvider<bool>((ref) => false);
 
 // ── Repository providers ──────────────────────────────────────────────────
 
+import '../services/auth_service.dart';
+
 final transactionsRepositoryProvider = Provider<TransactionsRepository>((ref) {
-  final offline = ref.watch(simulateOfflineProvider);
-  return TransactionsRepository(simulateOffline: offline);
+  final user = ref.watch(authStateProvider).valueOrNull;
+  return TransactionsRepository(userId: user?.uid ?? '');
 });
 
 final accountsRepositoryProvider = Provider<AccountsRepository>((ref) {
@@ -40,7 +42,8 @@ final budgetRepositoryProvider = Provider<BudgetRepository>((ref) {
 });
 
 final savingsGoalRepositoryProvider = Provider<SavingsGoalRepository>((ref) {
-  return SavingsGoalRepository();
+  final user = ref.watch(authStateProvider).valueOrNull;
+  return SavingsGoalRepository(userId: user?.uid ?? '');
 });
 
 // ── Data providers ────────────────────────────────────────────────────────

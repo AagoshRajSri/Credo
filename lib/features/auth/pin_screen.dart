@@ -168,7 +168,7 @@ class _PinBodyState extends State<_PinBody> with TickerProviderStateMixin {
             .get('app_pin', defaultValue: _kDemoPin) as String
         : _kDemoPin;
 
-    if (pin == savedPin || pin == _kDemoPin) {
+    if (pin == savedPin) {
       await _onCorrectPin();
     } else {
       await _onWrongPin();

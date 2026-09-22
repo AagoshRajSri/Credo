@@ -15,10 +15,13 @@ import 'features/analytics/analytics_screen.dart';
 import 'features/settings/settings_screen.dart';
 import 'features/goals/goals_screen.dart';
 import 'features/goals/goal_form_screen.dart';
+import 'features/auth/login_screen.dart';
 import 'shared/widgets/credo_nav_bar.dart';
+import 'data/services/auth_service.dart';
 
 // ── Route paths ──────────────────────────────────────────────────────────
 abstract final class AppRoutes {
+  static const String login = '/login';
   static const String pin = '/pin';
   static const String home = '/home';
   static const String accounts = '/accounts';
@@ -32,15 +35,35 @@ abstract final class AppRoutes {
 }
 
 // ── Router definition ────────────────────────────────────────────────────
-final GoRouter appRouter = GoRouter(
-  initialLocation: AppRoutes.pin,
-  routes: [
-    // ── PIN screen (no bottom nav shell) ──────────────────────────────
-    GoRoute(
-      path: AppRoutes.pin,
-      name: 'pin',
-      builder: (_, __) => const PinScreen(),
-    ),
+final routerProvider = Provider<GoRouter>((ref) {
+  final authState = ref.watch(authStateProvider);
+
+  return GoRouter(
+    initialLocation: AppRoutes.login,
+    redirect: (context, state) {
+      final isAuth = authState.valueOrNull != null;
+      final isLoggingIn = state.matchedLocation == AppRoutes.login;
+
+      // If not authenticated and not currently on login page, redirect to login
+      if (!isAuth && !isLoggingIn) return AppRoutes.login;
+
+      // If authenticated and on login page, go to PIN (or home)
+      if (isAuth && isLoggingIn) return AppRoutes.pin;
+
+      return null;
+    },
+    routes: [
+      GoRoute(
+        path: AppRoutes.login,
+        name: 'login',
+        builder: (_, __) => const LoginScreen(),
+      ),
+      // ── PIN screen (no bottom nav shell) ──────────────────────────────
+      GoRoute(
+        path: AppRoutes.pin,
+        name: 'pin',
+        builder: (_, __) => const PinScreen(),
+      ),
 
     // ── Transaction detail (no bottom nav — full screen) ───────────────
     // DECISION: Detail screen is outside the shell so it's full-screen
@@ -152,6 +175,7 @@ final GoRouter appRouter = GoRouter(
     ),
   ],
 );
+});
 
 // ── Shell scaffold with custom morphing pill nav ──────────────────────────
 
@@ -222,16 +246,17 @@ class _AppShell extends ConsumerWidget {
 }
 
 // ── Root app widget ───────────────────────────────────────────────────────
-class CredoApp extends StatelessWidget {
+class CredoApp extends ConsumerWidget {
   const CredoApp({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final router = ref.watch(routerProvider);
     return MaterialApp.router(
       title: 'Credo',
       debugShowCheckedModeBanner: false,
       theme: CredoTheme.dark,
-      routerConfig: appRouter,
+      routerConfig: router,
     );
   }
 }
