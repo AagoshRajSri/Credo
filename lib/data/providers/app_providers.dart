@@ -33,10 +33,36 @@ final creditScoreRepositoryProvider = Provider<CreditScoreRepository>((ref) {
 
 // ── Data providers ────────────────────────────────────────────────────────
 
-/// All transactions, sorted newest-first.
-final transactionsProvider = FutureProvider<List<Transaction>>((ref) async {
-  final repo = ref.watch(transactionsRepositoryProvider);
-  return repo.getAll();
+/// All transactions, sorted newest-first, mutable via AsyncNotifier.
+class TransactionsNotifier extends AsyncNotifier<List<Transaction>> {
+  @override
+  Future<List<Transaction>> build() async {
+    final repo = ref.watch(transactionsRepositoryProvider);
+    return repo.getAll();
+  }
+
+  Future<void> add(Transaction t) async {
+    final repo = ref.read(transactionsRepositoryProvider);
+    await repo.addTransaction(t);
+    state = AsyncData(await repo.getAll());
+  }
+
+  Future<void> updateTx(Transaction t) async {
+    final repo = ref.read(transactionsRepositoryProvider);
+    await repo.updateTransaction(t);
+    state = AsyncData(await repo.getAll());
+  }
+
+  Future<void> remove(String id) async {
+    final repo = ref.read(transactionsRepositoryProvider);
+    await repo.deleteTransaction(id);
+    state = AsyncData(await repo.getAll());
+  }
+}
+
+final transactionsProvider =
+    AsyncNotifierProvider<TransactionsNotifier, List<Transaction>>(() {
+  return TransactionsNotifier();
 });
 
 /// Transactions for a specific account ID.

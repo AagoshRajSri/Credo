@@ -7,8 +7,9 @@ import 'data/models/transaction.dart';
 import 'features/auth/pin_screen.dart';
 import 'features/dashboard/dashboard_screen.dart';
 import 'features/accounts/accounts_screen.dart';
-import 'features/transactions/transactions_screen.dart';
 import 'features/transactions/transaction_detail_screen.dart';
+import 'features/transactions/transaction_form_screen.dart';
+import 'features/transactions/transactions_screen.dart';
 import 'features/analytics/analytics_screen.dart';
 import 'shared/widgets/credo_nav_bar.dart';
 
@@ -19,6 +20,7 @@ abstract final class AppRoutes {
   static const String accounts = '/accounts';
   static const String transactions = '/transactions';
   static const String transactionDetail = '/transaction/:id';
+  static const String transactionForm = '/transaction-form';
   static const String analytics = '/analytics';
 }
 
@@ -78,6 +80,16 @@ final GoRouter appRouter = GoRouter(
             );
           },
         );
+      },
+    ),
+
+    // ── Transaction form (add / edit — full screen modal) ─────────────
+    GoRoute(
+      path: AppRoutes.transactionForm,
+      name: 'transaction-form',
+      builder: (context, state) {
+        final transaction = state.extra as Transaction?;
+        return TransactionFormScreen(existingTransaction: transaction);
       },
     ),
 

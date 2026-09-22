@@ -63,6 +63,23 @@ class TransactionsRepository {
     return items;
   }
 
+  /// Adds a new transaction to the cache.
+  Future<void> addTransaction(Transaction transaction) async {
+    await _box.put(transaction.id, transaction);
+  }
+
+  /// Updates an existing transaction in the cache.
+  Future<void> updateTransaction(Transaction transaction) async {
+    if (_box.containsKey(transaction.id)) {
+      await _box.put(transaction.id, transaction);
+    }
+  }
+
+  /// Deletes a transaction from the cache by ID.
+  Future<void> deleteTransaction(String id) async {
+    await _box.delete(id);
+  }
+
   Future<void> _seedToHive(List<Transaction> items) async {
     final map = {for (final t in items) t.id: t};
     await _box.putAll(map);

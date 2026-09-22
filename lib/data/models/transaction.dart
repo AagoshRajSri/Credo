@@ -48,6 +48,30 @@ class Transaction extends HiveObject {
   /// Signed amount: negative for debits, positive for credits.
   double get signedAmount => isCredit ? amount : -amount;
 
+  Transaction copyWith({
+    String? id,
+    String? accountId,
+    String? merchant,
+    double? amount,
+    bool? isCredit,
+    TransactionCategory? category,
+    DateTime? date,
+    String? note,
+    String? iconEmoji,
+  }) {
+    return Transaction(
+      id: id ?? this.id,
+      accountId: accountId ?? this.accountId,
+      merchant: merchant ?? this.merchant,
+      amount: amount ?? this.amount,
+      isCredit: isCredit ?? this.isCredit,
+      category: category ?? this.category,
+      date: date ?? this.date,
+      note: note ?? this.note,
+      iconEmoji: iconEmoji ?? this.iconEmoji,
+    );
+  }
+
   factory Transaction.fromJson(Map<String, dynamic> json) => Transaction(
         id: json['id'] as String,
         accountId: json['account_id'] as String,

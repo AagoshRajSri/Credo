@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../../core/theme/color_tokens.dart';
 import '../../core/constants/app_constants.dart';
 import '../../core/utils/formatters.dart';
 import '../../core/utils/extensions.dart';
 import '../../data/models/transaction.dart';
+import '../../data/models/enums.dart';
+import '../../data/providers/app_providers.dart';
 import '../../shared/widgets/gradient_background.dart';
 
 /// Full-screen transaction detail.
@@ -11,13 +15,13 @@ import '../../shared/widgets/gradient_background.dart';
 /// Phase 3: plain push navigation, static layout.
 /// Phase 6: Hero tag wraps the amount + merchant icon, custom page route
 ///           provides shared-axis entrance.
-class TransactionDetailScreen extends StatelessWidget {
+class TransactionDetailScreen extends ConsumerWidget {
   const TransactionDetailScreen({super.key, required this.transaction});
 
   final Transaction transaction;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final color =
         transaction.isCredit ? CredoColors.success : CredoColors.error;
 
@@ -158,6 +162,10 @@ class _DetailAppBar extends StatelessWidget {
           const Spacer(),
           // Share / receipt placeholder
           IconButton(
+            icon: const Icon(Icons.edit_outlined, size: 20),
+            onPressed: () => context.push('/transaction-form', extra: transaction),
+          ),
+          IconButton(
             icon: const Icon(Icons.ios_share_outlined, size: 20),
             onPressed: () {},
           ),
@@ -167,21 +175,98 @@ class _DetailAppBar extends StatelessWidget {
   }
 }
 
-class _CategoryChip extends StatelessWidget {
+class _CategoryChip extends ConsumerWidget {
   const _CategoryChip({required this.transaction});
   final Transaction transaction;
 
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
-      decoration: BoxDecoration(
-        color: CredoColors.surfaceVariant,
-        borderRadius: BorderRadius.circular(AppConstants.radiusFull),
+  void _showCategoryPicker(BuildContext context, WidgetRef ref) {
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: CredoColors.background,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
-      child: Text(
-        '${transaction.category.emoji}  ${transaction.category.displayName}',
-        style: context.textTheme.labelMedium,
+      builder: (context) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  'Change Category',
+                  style: context.textTheme.titleMedium,
+                ),
+                const SizedBox(height: 16),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 12,
+                  alignment: WrapAlignment.center,
+                  children: TransactionCategory.values.map((cat) {
+                    final isSelected = cat == transaction.category;
+                    return GestureDetector(
+                      onTap: () {
+                        final newTx = transaction.copyWith(category: cat);
+                        ref.read(transactionsProvider.notifier).updateTx(newTx);
+                        context.pop();
+                        // Also pop the detail screen to show updated dashboard
+                        context.pop();
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 8),
+                        decoration: BoxDecoration(
+                          color: isSelected
+                              ? CredoColors.accentViolet
+                              : CredoColors.surfaceVariant,
+                          borderRadius: BorderRadius.circular(24),
+                          border: Border.all(
+                            color: isSelected
+                                ? CredoColors.accentViolet
+                                : CredoColors.textDisabled,
+                          ),
+                        ),
+                        child: Text(
+                          '${cat.emoji}  ${cat.displayName}',
+                          style: TextStyle(
+                            color: isSelected
+                                ? Colors.white
+                                : CredoColors.textPrimary,
+                          ),
+                        ),
+                      ),
+                    );
+                  }).toList(),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return GestureDetector(
+      onTap: () => _showCategoryPicker(context, ref),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+        decoration: BoxDecoration(
+          color: CredoColors.surfaceVariant,
+          borderRadius: BorderRadius.circular(AppConstants.radiusFull),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              '${transaction.category.emoji}  ${transaction.category.displayName}',
+              style: context.textTheme.labelMedium,
+            ),
+            const SizedBox(width: 4),
+            const Icon(Icons.keyboard_arrow_down, size: 16, color: CredoColors.textSecondary),
+          ],
+        ),
       ),
     );
   }

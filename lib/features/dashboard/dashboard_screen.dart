@@ -19,8 +19,13 @@ class DashboardScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return const Scaffold(
-      body: Stack(
+    return Scaffold(
+      floatingActionButton: FloatingActionButton(
+        onPressed: () => context.push('/transaction-form'),
+        backgroundColor: CredoColors.accentViolet,
+        child: const Icon(Icons.add, color: Colors.white),
+      ),
+      body: const Stack(
         children: [
           GradientBackground(),
           SafeArea(child: _DashboardBody()),

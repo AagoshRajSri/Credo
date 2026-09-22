@@ -27,6 +27,11 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
     final txnAsync = ref.watch(transactionsProvider);
 
     return Scaffold(
+      floatingActionButton: FloatingActionButton(
+        onPressed: () => context.push('/transaction-form'),
+        backgroundColor: CredoColors.accentViolet,
+        child: const Icon(Icons.add, color: Colors.white),
+      ),
       body: Stack(
         children: [
           const GradientBackground(),
@@ -99,12 +104,28 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
                         itemCount: filtered.length,
                         itemBuilder: (context, i) {
                           final txn = filtered[i];
-                          return TransactionRow(
-                            transaction: txn,
-                            showDivider: i < filtered.length - 1,
-                            onTap: () => context.push(
-                              '/transaction/${txn.id}',
-                              extra: txn,
+                          return Dismissible(
+                            key: ValueKey(txn.id),
+                            direction: DismissDirection.endToStart,
+                            background: Container(
+                              alignment: Alignment.centerRight,
+                              padding: const EdgeInsets.only(right: 24),
+                              color: CredoColors.error,
+                              child: const Icon(Icons.delete, color: Colors.white),
+                            ),
+                            onDismissed: (direction) {
+                              ref.read(transactionsProvider.notifier).remove(txn.id);
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text('Transaction deleted')),
+                              );
+                            },
+                            child: TransactionRow(
+                              transaction: txn,
+                              showDivider: i < filtered.length - 1,
+                              onTap: () => context.push(
+                                '/transaction/${txn.id}',
+                                extra: txn,
+                              ),
                             ),
                           );
                         },
