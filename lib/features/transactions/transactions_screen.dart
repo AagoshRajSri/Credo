@@ -36,10 +36,13 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
     final txnAsync = ref.watch(transactionsProvider);
 
     return Scaffold(
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => context.push('/transaction-form'),
-        backgroundColor: CredoColors.accentViolet,
-        child: const Icon(Icons.add, color: Colors.white),
+      floatingActionButton: Padding(
+        padding: const EdgeInsets.only(bottom: 120),
+        child: FloatingActionButton(
+          onPressed: () => context.push('/transaction-form'),
+          backgroundColor: CredoColors.accentViolet,
+          child: const Icon(Icons.add, color: Colors.white),
+        ),
       ),
       body: Stack(
         children: [

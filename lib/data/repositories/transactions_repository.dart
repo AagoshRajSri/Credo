@@ -9,6 +9,7 @@ abstract final class HiveBoxNames {
   static const String scoreHistory = 'score_history_box';
   static const String appSettings = 'app_settings_box';
   static const String budgets = 'budgets_box';
+  static const String savingsGoals = 'savings_goals_box';
 }
 
 /// Transactions repository.

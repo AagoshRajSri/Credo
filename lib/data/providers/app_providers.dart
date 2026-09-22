@@ -3,7 +3,9 @@ import '../repositories/transactions_repository.dart';
 import '../repositories/accounts_repository.dart';
 import '../repositories/credit_score_repository.dart';
 import '../repositories/budget_repository.dart';
+import '../repositories/savings_goal_repository.dart';
 import '../models/transaction.dart';
+import '../models/savings_goal.dart';
 import '../models/account.dart';
 import '../models/credit_score_snapshot.dart';
 import '../models/enums.dart';
@@ -37,6 +39,10 @@ final budgetRepositoryProvider = Provider<BudgetRepository>((ref) {
   return BudgetRepository();
 });
 
+final savingsGoalRepositoryProvider = Provider<SavingsGoalRepository>((ref) {
+  return SavingsGoalRepository();
+});
+
 // ── Data providers ────────────────────────────────────────────────────────
 
 /// Monthly category budgets notifier.
@@ -63,6 +69,38 @@ class BudgetsNotifier extends AsyncNotifier<Map<TransactionCategory, double>> {
 final budgetsProvider =
     AsyncNotifierProvider<BudgetsNotifier, Map<TransactionCategory, double>>(() {
   return BudgetsNotifier();
+});
+
+/// Savings goals notifier.
+class SavingsGoalsNotifier extends AsyncNotifier<List<SavingsGoal>> {
+  @override
+  Future<List<SavingsGoal>> build() async {
+    final repo = ref.watch(savingsGoalRepositoryProvider);
+    return repo.getAllGoals();
+  }
+
+  Future<void> add(SavingsGoal goal) async {
+    final repo = ref.read(savingsGoalRepositoryProvider);
+    await repo.addGoal(goal);
+    state = AsyncData(await repo.getAllGoals());
+  }
+
+  Future<void> updateGoal(SavingsGoal goal) async {
+    final repo = ref.read(savingsGoalRepositoryProvider);
+    await repo.updateGoal(goal);
+    state = AsyncData(await repo.getAllGoals());
+  }
+
+  Future<void> remove(String id) async {
+    final repo = ref.read(savingsGoalRepositoryProvider);
+    await repo.deleteGoal(id);
+    state = AsyncData(await repo.getAllGoals());
+  }
+}
+
+final savingsGoalsProvider =
+    AsyncNotifierProvider<SavingsGoalsNotifier, List<SavingsGoal>>(() {
+  return SavingsGoalsNotifier();
 });
 
 /// All transactions, sorted newest-first, mutable via AsyncNotifier.

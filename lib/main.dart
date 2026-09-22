@@ -8,6 +8,8 @@ import 'data/adapters/credit_score_snapshot_adapter.dart';
 import 'data/models/account.dart';
 import 'data/models/transaction.dart';
 import 'data/models/credit_score_snapshot.dart';
+import 'data/models/savings_goal.dart';
+import 'data/adapters/savings_goal_adapter.dart';
 import 'data/repositories/transactions_repository.dart';
 import 'app.dart';
 
@@ -38,6 +40,9 @@ Future<void> main() async {
   if (!Hive.isAdapterRegistered(4)) {
     Hive.registerAdapter(CreditScoreSnapshotAdapter());
   }
+  if (!Hive.isAdapterRegistered(5)) {
+    Hive.registerAdapter(SavingsGoalAdapter());
+  }
 
   // Open all boxes before the widget tree starts.
   await Future.wait([
@@ -46,6 +51,7 @@ Future<void> main() async {
     Hive.openBox<CreditScoreSnapshot>(HiveBoxNames.scoreHistory),
     Hive.openBox<dynamic>(HiveBoxNames.appSettings),
     Hive.openBox<double>(HiveBoxNames.budgets),
+    Hive.openBox<SavingsGoal>(HiveBoxNames.savingsGoals),
   ]);
 
   runApp(

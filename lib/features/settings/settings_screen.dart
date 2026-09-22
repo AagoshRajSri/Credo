@@ -363,21 +363,25 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                             ),
                             title: const Text('App Security PIN'),
                             subtitle: Text('Current PIN: •••• (ends in ${_currentPin.characters.last})'),
-                            trailing: ElevatedButton(
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: CredoColors.surfaceHighlight,
-                                elevation: 0,
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 12,
-                                  vertical: 6,
+                            trailing: SizedBox(
+                              width: 84,
+                              height: 36,
+                              child: ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: CredoColors.surfaceHighlight,
+                                  elevation: 0,
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 8,
+                                    vertical: 0,
+                                  ),
                                 ),
-                              ),
-                              onPressed: _showChangePinDialog,
-                              child: const Text(
-                                'Change',
-                                style: TextStyle(
-                                  color: CredoColors.accentCyan,
-                                  fontSize: 12,
+                                onPressed: _showChangePinDialog,
+                                child: const Text(
+                                  'Change',
+                                  style: TextStyle(
+                                    color: CredoColors.accentCyan,
+                                    fontSize: 12,
+                                  ),
                                 ),
                               ),
                             ),

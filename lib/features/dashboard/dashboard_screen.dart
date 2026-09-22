@@ -12,6 +12,7 @@ import '../../shared/widgets/account_card.dart';
 import '../../shared/widgets/transaction_row.dart';
 import '../../shared/widgets/shimmer_widgets.dart';
 import '../../shared/widgets/empty_state.dart';
+import '../goals/widgets/goal_card.dart';
 import 'widgets/score_gauge.dart';
 
 class DashboardScreen extends ConsumerWidget {
@@ -20,10 +21,13 @@ class DashboardScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => context.push('/transaction-form'),
-        backgroundColor: CredoColors.accentViolet,
-        child: const Icon(Icons.add, color: Colors.white),
+      floatingActionButton: Padding(
+        padding: const EdgeInsets.only(bottom: 120),
+        child: FloatingActionButton(
+          onPressed: () => context.push('/transaction-form'),
+          backgroundColor: CredoColors.accentViolet,
+          child: const Icon(Icons.add, color: Colors.white),
+        ),
       ),
       body: const Stack(
         children: [
@@ -43,6 +47,7 @@ class _DashboardBody extends ConsumerWidget {
     final scoreAsync = ref.watch(latestScoreProvider);
     final historyAsync = ref.watch(scoreHistoryProvider);
     final accountsAsync = ref.watch(accountsProvider);
+    final goalsAsync = ref.watch(savingsGoalsProvider);
     final txnAsync = ref.watch(transactionsProvider);
     final rateAsync = ref.watch(exchangeRateProvider);
 
@@ -105,6 +110,59 @@ class _DashboardBody extends ConsumerWidget {
             loading: () => const AccountCardShimmer(),
             error: (e, _) => const SizedBox(height: 80),
             data: (accounts) => _AccountsRow(accounts: accounts),
+          ),
+        ),
+
+        // ── Savings Goals ────────────────────────────────────────────
+        SliverToBoxAdapter(
+          child: _SectionHeader(
+            title: 'Savings Goals',
+            actionLabel: 'See all',
+            onAction: () => context.push('/goals'),
+          ),
+        ),
+        SliverToBoxAdapter(
+          child: goalsAsync.when(
+            loading: () => const SizedBox(height: 120, child: Center(child: CircularProgressIndicator())),
+            error: (e, _) => const SizedBox.shrink(),
+            data: (goals) {
+              if (goals.isEmpty) {
+                return Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: AppConstants.spacingM),
+                  child: Container(
+                    height: 120,
+                    decoration: BoxDecoration(
+                      color: CredoColors.surfaceVariant,
+                      borderRadius: BorderRadius.circular(AppConstants.radiusLarge),
+                      border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
+                    ),
+                    child: Center(
+                      child: TextButton.icon(
+                        onPressed: () => context.push('/goal-form'),
+                        icon: const Icon(Icons.add, color: CredoColors.accentViolet),
+                        label: const Text('Add your first goal', style: TextStyle(color: CredoColors.accentViolet)),
+                      ),
+                    ),
+                  ),
+                );
+              }
+              return SizedBox(
+                height: 130,
+                child: ListView.separated(
+                  padding: const EdgeInsets.symmetric(horizontal: AppConstants.spacingM),
+                  scrollDirection: Axis.horizontal,
+                  itemCount: goals.take(3).length,
+                  separatorBuilder: (_, __) => const SizedBox(width: 12),
+                  itemBuilder: (_, i) {
+                    final goal = goals[i];
+                    return GoalCard(
+                      goal: goal,
+                      onTap: () => context.push('/goal-form', extra: goal),
+                    );
+                  },
+                ),
+              );
+            },
           ),
         ),
 

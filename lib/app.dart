@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'data/providers/app_providers.dart';
 import 'core/theme/app_theme.dart';
 import 'data/models/transaction.dart';
+import 'data/models/savings_goal.dart';
 import 'features/auth/pin_screen.dart';
 import 'features/dashboard/dashboard_screen.dart';
 import 'features/accounts/accounts_screen.dart';
@@ -12,6 +13,8 @@ import 'features/transactions/transaction_form_screen.dart';
 import 'features/transactions/transactions_screen.dart';
 import 'features/analytics/analytics_screen.dart';
 import 'features/settings/settings_screen.dart';
+import 'features/goals/goals_screen.dart';
+import 'features/goals/goal_form_screen.dart';
 import 'shared/widgets/credo_nav_bar.dart';
 
 // ── Route paths ──────────────────────────────────────────────────────────
@@ -24,6 +27,8 @@ abstract final class AppRoutes {
   static const String transactionForm = '/transaction-form';
   static const String settings = '/settings';
   static const String analytics = '/analytics';
+  static const String goals = '/goals';
+  static const String goalForm = '/goal-form';
 }
 
 // ── Router definition ────────────────────────────────────────────────────
@@ -100,6 +105,23 @@ final GoRouter appRouter = GoRouter(
       path: AppRoutes.settings,
       name: 'settings',
       builder: (_, __) => const SettingsScreen(),
+    ),
+
+    // ── Goals (full screen) ───────────────────────────────────────────
+    GoRoute(
+      path: AppRoutes.goals,
+      name: 'goals',
+      builder: (_, __) => const SavingsGoalsScreen(),
+    ),
+
+    // ── Goal Form (full screen modal) ─────────────────────────────────
+    GoRoute(
+      path: AppRoutes.goalForm,
+      name: 'goal-form',
+      builder: (context, state) {
+        final goal = state.extra as SavingsGoal?;
+        return GoalFormScreen(existingGoal: goal);
+      },
     ),
 
     // ── Main shell with bottom navigation ─────────────────────────────
