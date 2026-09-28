@@ -7,78 +7,78 @@ import 'color_tokens.dart';
 /// Call [CredoTheme.dark] to get the [ThemeData] for the app.
 abstract final class CredoTheme {
   // ── Type scale ───────────────────────────────────────────────────────
-  // Display / headlines: Space Grotesk (bold, impactful)
-  // Body / labels:       Inter (clean, legible at small sizes)
+  // Display / headlines: Outfit (modern, geometric)
+  // Body / labels:       Plus Jakarta Sans (clean, highly legible)
 
   static TextTheme _buildTextTheme() {
-    final spaceGrotesk = GoogleFonts.spaceGroteskTextTheme();
-    final inter = GoogleFonts.interTextTheme();
+    final outfit = GoogleFonts.outfitTextTheme();
+    final plusJakarta = GoogleFonts.plusJakartaSansTextTheme();
 
     return TextTheme(
       // Display — score numbers, hero headings
-      displayLarge: spaceGrotesk.displayLarge?.copyWith(
+      displayLarge: outfit.displayLarge?.copyWith(
         color: CredoColors.textPrimary,
         fontWeight: FontWeight.w700,
         letterSpacing: -1.5,
       ),
-      displayMedium: spaceGrotesk.displayMedium?.copyWith(
+      displayMedium: outfit.displayMedium?.copyWith(
         color: CredoColors.textPrimary,
         fontWeight: FontWeight.w700,
         letterSpacing: -1.0,
       ),
-      displaySmall: spaceGrotesk.displaySmall?.copyWith(
+      displaySmall: outfit.displaySmall?.copyWith(
         color: CredoColors.textPrimary,
         fontWeight: FontWeight.w600,
         letterSpacing: -0.5,
       ),
       // Headlines — section titles, card headings
-      headlineLarge: spaceGrotesk.headlineLarge?.copyWith(
+      headlineLarge: outfit.headlineLarge?.copyWith(
         color: CredoColors.textPrimary,
         fontWeight: FontWeight.w700,
       ),
-      headlineMedium: spaceGrotesk.headlineMedium?.copyWith(
+      headlineMedium: outfit.headlineMedium?.copyWith(
         color: CredoColors.textPrimary,
         fontWeight: FontWeight.w600,
       ),
-      headlineSmall: spaceGrotesk.headlineSmall?.copyWith(
+      headlineSmall: outfit.headlineSmall?.copyWith(
         color: CredoColors.textPrimary,
         fontWeight: FontWeight.w600,
       ),
       // Title — app bars, dialog titles
-      titleLarge: inter.titleLarge?.copyWith(
+      titleLarge: plusJakarta.titleLarge?.copyWith(
         color: CredoColors.textPrimary,
         fontWeight: FontWeight.w600,
       ),
-      titleMedium: inter.titleMedium?.copyWith(
+      titleMedium: plusJakarta.titleMedium?.copyWith(
         color: CredoColors.textPrimary,
         fontWeight: FontWeight.w500,
       ),
-      titleSmall: inter.titleSmall?.copyWith(
+      titleSmall: plusJakarta.titleSmall?.copyWith(
         color: CredoColors.textSecondary,
         fontWeight: FontWeight.w500,
       ),
       // Body — primary content
-      bodyLarge: inter.bodyLarge?.copyWith(
+      bodyLarge: plusJakarta.bodyLarge?.copyWith(
         color: CredoColors.textPrimary,
       ),
-      bodyMedium: inter.bodyMedium?.copyWith(
+      bodyMedium: plusJakarta.bodyMedium?.copyWith(
         color: CredoColors.textSecondary,
       ),
-      bodySmall: inter.bodySmall?.copyWith(
+      bodySmall: plusJakarta.bodySmall?.copyWith(
         color: CredoColors.textTertiary,
         fontSize: 12,
       ),
       // Label — chips, tags, overlines
-      labelLarge: inter.labelLarge?.copyWith(
+      labelLarge: plusJakarta.labelLarge?.copyWith(
         color: CredoColors.textPrimary,
         fontWeight: FontWeight.w600,
         letterSpacing: 0.5,
       ),
-      labelMedium: inter.labelMedium?.copyWith(
+      labelMedium: plusJakarta.labelMedium?.copyWith(
         color: CredoColors.textSecondary,
         letterSpacing: 0.5,
       ),
-      labelSmall: inter.labelSmall?.copyWith(
+      labelSmall: plusJakarta.labelSmall?.copyWith(
         color: CredoColors.textTertiary,
         letterSpacing: 1.0,
       ),
