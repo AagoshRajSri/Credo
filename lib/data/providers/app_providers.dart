@@ -11,6 +11,7 @@ import '../models/credit_score_snapshot.dart';
 import '../models/enums.dart';
 import '../services/analytics_isolate.dart';
 import '../services/exchange_rate_service.dart';
+import '../services/auth_service.dart';
 
 // ── Debug: simulate offline ───────────────────────────────────────────────
 
@@ -19,8 +20,6 @@ import '../services/exchange_rate_service.dart';
 final simulateOfflineProvider = StateProvider<bool>((ref) => false);
 
 // ── Repository providers ──────────────────────────────────────────────────
-
-import '../services/auth_service.dart';
 
 final transactionsRepositoryProvider = Provider<TransactionsRepository>((ref) {
   final user = ref.watch(authStateProvider).valueOrNull;

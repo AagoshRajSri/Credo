@@ -146,7 +146,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         _isLogin
                             ? "Don't have an account? Sign Up"
                             : 'Already have an account? Sign In',
-                        style: TextStyle(color: CredoColors.textSecondary),
+                        style: const TextStyle(color: CredoColors.textSecondary),
                       ),
                     ),
                   ],

@@ -1,6 +1,5 @@
-import 'package:hive/hive.dart';
+import 'package:cloud_firestore/cloud_firestore.dart' hide Transaction;
 import '../models/transaction.dart';
-import '../services/local_data_service.dart';
 
 /// Box names — centralised so typos fail at compile time.
 abstract final class HiveBoxNames {
@@ -11,9 +10,6 @@ abstract final class HiveBoxNames {
   static const String budgets = 'budgets_box';
   static const String savingsGoals = 'savings_goals_box';
 }
-
-import 'package:cloud_firestore/cloud_firestore.dart';
-import '../models/transaction.dart';
 
 class TransactionsRepository {
   TransactionsRepository({required this.userId});

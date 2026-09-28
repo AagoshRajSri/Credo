@@ -14,6 +14,8 @@ import '../../shared/widgets/shimmer_widgets.dart';
 import '../../shared/widgets/empty_state.dart';
 import '../goals/widgets/goal_card.dart';
 import 'widgets/score_gauge.dart';
+import 'package:fl_chart/fl_chart.dart';
+import '../../data/services/analytics_isolate.dart';
 
 class DashboardScreen extends ConsumerWidget {
   const DashboardScreen({super.key});
@@ -50,6 +52,7 @@ class _DashboardBody extends ConsumerWidget {
     final goalsAsync = ref.watch(savingsGoalsProvider);
     final txnAsync = ref.watch(transactionsProvider);
     final rateAsync = ref.watch(exchangeRateProvider);
+    final analyticsAsync = ref.watch(analyticsProvider);
 
     return RefreshIndicator(
       onRefresh: () async {
@@ -58,6 +61,7 @@ class _DashboardBody extends ConsumerWidget {
         ref.invalidate(exchangeRateProvider);
         ref.invalidate(latestScoreProvider);
         ref.invalidate(scoreHistoryProvider);
+        ref.invalidate(analyticsProvider);
         await ref.read(transactionsProvider.future);
       },
       color: CredoColors.accentViolet,
@@ -69,6 +73,9 @@ class _DashboardBody extends ConsumerWidget {
         slivers: [
           // ── Header ──────────────────────────────────────────────────
           SliverToBoxAdapter(child: _Header(rateAsync: rateAsync)),
+
+          // ── Expense Overview Chart ──────────────────────────────────
+          SliverToBoxAdapter(child: _ExpenseOverviewChart(analyticsAsync: analyticsAsync)),
 
         // ── Credit Score Card ────────────────────────────────────────
         SliverToBoxAdapter(
@@ -364,7 +371,6 @@ class _SectionHeader extends StatelessWidget {
   final String title;
   final String? actionLabel;
   final VoidCallback? onAction;
-
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -390,6 +396,170 @@ class _SectionHeader extends StatelessWidget {
             ),
         ],
       ),
+    );
+  }
+}
+// ── Expense Overview Chart ────────────────────────────────────────────────
+class _ExpenseOverviewChart extends StatelessWidget {
+  const _ExpenseOverviewChart({required this.analyticsAsync});
+  final AsyncValue<AnalyticsResult> analyticsAsync;
+
+  @override
+  Widget build(BuildContext context) {
+    return analyticsAsync.when(
+      loading: () => const Padding(
+        padding: EdgeInsets.symmetric(horizontal: AppConstants.spacingM, vertical: AppConstants.spacingS),
+        child: ChartShimmer(height: 220),
+      ),
+      error: (e, _) => const SizedBox.shrink(),
+      data: (analytics) {
+        final months = analytics.monthlySpend;
+        if (months.isEmpty) return const SizedBox.shrink();
+
+        final maxY = months.map((m) => m.total).fold<double>(0, (a, b) => a > b ? a : b);
+        
+        final spots = months.asMap().entries.map((e) {
+          return FlSpot(e.key.toDouble(), e.value.total);
+        }).toList();
+
+        return Padding(
+          padding: const EdgeInsets.symmetric(horizontal: AppConstants.spacingM, vertical: AppConstants.spacingS),
+          child: Container(
+            height: 240,
+            padding: const EdgeInsets.fromLTRB(AppConstants.spacingM, AppConstants.spacingM, AppConstants.spacingM, 8),
+            decoration: BoxDecoration(
+              color: CredoColors.surfaceVariant,
+              borderRadius: BorderRadius.circular(AppConstants.radiusXL),
+              border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
+              boxShadow: [
+                BoxShadow(
+                  color: CredoColors.accentViolet.withValues(alpha: 0.1),
+                  blurRadius: 20,
+                  spreadRadius: -5,
+                  offset: const Offset(0, 8),
+                ),
+              ],
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text('Expense Overview', style: context.textTheme.titleMedium),
+                    const Icon(Icons.auto_graph_rounded, color: CredoColors.accentViolet, size: 20),
+                  ],
+                ),
+                const SizedBox(height: 24),
+                Expanded(
+                  child: LineChart(
+                    LineChartData(
+                      gridData: const FlGridData(show: false),
+                      titlesData: FlTitlesData(
+                        leftTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                        rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                        topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                        bottomTitles: AxisTitles(
+                          sideTitles: SideTitles(
+                            showTitles: true,
+                            reservedSize: 28,
+                            interval: 1,
+                            getTitlesWidget: (value, meta) {
+                              final index = value.toInt();
+                              if (index >= 0 && index < months.length) {
+                                return Padding(
+                                  padding: const EdgeInsets.only(top: 8.0),
+                                  child: Text(
+                                    months[index].label,
+                                    style: context.textTheme.labelSmall?.copyWith(color: CredoColors.textSecondary),
+                                  ),
+                                );
+                              }
+                              return const SizedBox.shrink();
+                            },
+                          ),
+                        ),
+                      ),
+                      borderData: FlBorderData(show: false),
+                      minX: 0,
+                      maxX: (months.length > 1 ? months.length - 1 : 1).toDouble(),
+                      minY: 0,
+                      maxY: maxY * 1.25,
+                      lineBarsData: [
+                        LineChartBarData(
+                          spots: spots,
+                          isCurved: true,
+                          curveSmoothness: 0.35,
+                          gradient: const LinearGradient(
+                            colors: [CredoColors.accentViolet, CredoColors.accentCyan],
+                            begin: Alignment.centerLeft,
+                            end: Alignment.centerRight,
+                          ),
+                          barWidth: 4,
+                          isStrokeCapRound: true,
+                          dotData: const FlDotData(show: false),
+                          belowBarData: BarAreaData(
+                            show: true,
+                            gradient: LinearGradient(
+                              colors: [
+                                CredoColors.accentViolet.withValues(alpha: 0.4),
+                                CredoColors.accentCyan.withValues(alpha: 0.0),
+                              ],
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                            ),
+                          ),
+                        ),
+                      ],
+                      lineTouchData: LineTouchData(
+                        getTouchedSpotIndicator: (LineChartBarData barData, List<int> spotIndexes) {
+                          return spotIndexes.map((spotIndex) {
+                            return TouchedSpotIndicatorData(
+                              const FlLine(color: CredoColors.accentCyan, strokeWidth: 2, dashArray: [4, 4]),
+                              FlDotData(
+                                getDotPainter: (spot, percent, barData, index) {
+                                  return FlDotCirclePainter(
+                                    radius: 6,
+                                    color: CredoColors.surface,
+                                    strokeWidth: 3,
+                                    strokeColor: CredoColors.accentCyan,
+                                  );
+                                },
+                              ),
+                            );
+                          }).toList();
+                        },
+                        touchTooltipData: LineTouchTooltipData(
+                          getTooltipColor: (_) => CredoColors.surfaceHighlight,
+                          tooltipRoundedRadius: 8,
+                          getTooltipItems: (touchedSpots) {
+                            return touchedSpots.map((spot) {
+                              return LineTooltipItem(
+                                '${months[spot.x.toInt()].label}\n',
+                                const TextStyle(color: CredoColors.textSecondary, fontSize: 11),
+                                children: [
+                                  TextSpan(
+                                    text: CredoFormatters.rupeesCompact(spot.y),
+                                    style: const TextStyle(
+                                      color: CredoColors.textPrimary,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 13,
+                                    ),
+                                  ),
+                                ],
+                              );
+                            }).toList();
+                          },
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 }

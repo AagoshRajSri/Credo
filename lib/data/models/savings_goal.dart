@@ -68,4 +68,32 @@ class SavingsGoal {
   double get remainingAmount {
     return (targetAmount - savedAmount).clamp(0.0, double.infinity);
   }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'name': name,
+      'targetAmount': targetAmount,
+      'savedAmount': savedAmount,
+      'deadline': deadline?.toIso8601String(),
+      'colorValue': colorValue,
+      'iconCode': iconCode,
+      'isCompleted': isCompleted,
+    };
+  }
+
+  factory SavingsGoal.fromJson(Map<String, dynamic> json) {
+    return SavingsGoal(
+      id: json['id'] as String,
+      name: json['name'] as String,
+      targetAmount: (json['targetAmount'] as num).toDouble(),
+      savedAmount: (json['savedAmount'] as num).toDouble(),
+      deadline: json['deadline'] != null
+          ? DateTime.tryParse(json['deadline'] as String)
+          : null,
+      colorValue: json['colorValue'] as int,
+      iconCode: json['iconCode'] as int,
+      isCompleted: json['isCompleted'] as bool? ?? false,
+    );
+  }
 }
