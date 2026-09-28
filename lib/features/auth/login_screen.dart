@@ -6,6 +6,8 @@ import '../../core/utils/extensions.dart';
 import '../../data/services/auth_service.dart';
 import '../../shared/widgets/gradient_background.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'dart:ui';
+import 'package:flutter/services.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -96,57 +98,88 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     ),
                     const SizedBox(height: AppConstants.spacingXXL),
 
-                    // Inputs
-                    _buildTextField(
-                      controller: _emailController,
-                      label: 'Email',
-                      icon: Icons.email_outlined,
-                      keyboardType: TextInputType.emailAddress,
-                    ),
-                    const SizedBox(height: AppConstants.spacingM),
-                    _buildTextField(
-                      controller: _passwordController,
-                      label: 'Password',
-                      icon: Icons.lock_outline_rounded,
-                      obscureText: true,
-                    ),
-                    const SizedBox(height: AppConstants.spacingXL),
-
-                    // Submit Button
-                    ElevatedButton(
-                      onPressed: _isLoading ? null : _submit,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: CredoColors.accentViolet,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(AppConstants.radiusMedium),
-                        ),
-                      ),
-                      child: _isLoading
-                          ? const SizedBox(
-                              height: 20,
-                              width: 20,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                              ),
-                            )
-                          : Text(
-                              _isLogin ? 'Sign In' : 'Create Account',
-                              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                    // Glassmorphism Card
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(AppConstants.radiusXL),
+                      child: BackdropFilter(
+                        filter: ImageFilter.blur(sigmaX: 16.0, sigmaY: 16.0),
+                        child: Container(
+                          padding: const EdgeInsets.all(AppConstants.spacingL),
+                          decoration: BoxDecoration(
+                            color: CredoColors.surfaceVariant.withValues(alpha: 0.4),
+                            borderRadius: BorderRadius.circular(AppConstants.radiusXL),
+                            border: Border.all(
+                              color: Colors.white.withValues(alpha: 0.1),
+                              width: 1.5,
                             ),
-                    ),
-                    const SizedBox(height: AppConstants.spacingM),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              // Inputs
+                              _buildTextField(
+                                controller: _emailController,
+                                label: 'Email',
+                                icon: Icons.email_outlined,
+                                keyboardType: TextInputType.emailAddress,
+                              ),
+                              const SizedBox(height: AppConstants.spacingM),
+                              _buildTextField(
+                                controller: _passwordController,
+                                label: 'Password',
+                                icon: Icons.lock_outline_rounded,
+                                obscureText: true,
+                              ),
+                              const SizedBox(height: AppConstants.spacingXL),
 
-                    // Toggle mode
-                    TextButton(
-                      onPressed: () => setState(() => _isLogin = !_isLogin),
-                      child: Text(
-                        _isLogin
-                            ? "Don't have an account? Sign Up"
-                            : 'Already have an account? Sign In',
-                        style: const TextStyle(color: CredoColors.textSecondary),
+                              // Submit Button
+                              ElevatedButton(
+                                onPressed: _isLoading ? null : () {
+                                  HapticFeedback.mediumImpact();
+                                  _submit();
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: CredoColors.accentViolet,
+                                  foregroundColor: Colors.white,
+                                  padding: const EdgeInsets.symmetric(vertical: 16),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(AppConstants.radiusMedium),
+                                  ),
+                                  elevation: 8,
+                                  shadowColor: CredoColors.accentViolet.withValues(alpha: 0.5),
+                                ),
+                                child: _isLoading
+                                    ? const SizedBox(
+                                        height: 20,
+                                        width: 20,
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                        ),
+                                      )
+                                    : Text(
+                                        _isLogin ? 'Sign In' : 'Create Account',
+                                        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                                      ),
+                              ),
+                              const SizedBox(height: AppConstants.spacingM),
+
+                              // Toggle mode
+                              TextButton(
+                                onPressed: () {
+                                  HapticFeedback.selectionClick();
+                                  setState(() => _isLogin = !_isLogin);
+                                },
+                                child: Text(
+                                  _isLogin
+                                      ? "Don't have an account? Sign Up"
+                                      : 'Already have an account? Sign In',
+                                  style: const TextStyle(color: CredoColors.textSecondary),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
                       ),
                     ),
                   ],

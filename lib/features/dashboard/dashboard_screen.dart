@@ -16,6 +16,8 @@ import '../goals/widgets/goal_card.dart';
 import 'widgets/score_gauge.dart';
 import 'package:fl_chart/fl_chart.dart';
 import '../../data/services/analytics_isolate.dart';
+import 'package:flutter_animate/flutter_animate.dart';
+import 'package:flutter/services.dart';
 
 class DashboardScreen extends ConsumerWidget {
   const DashboardScreen({super.key});
@@ -26,7 +28,10 @@ class DashboardScreen extends ConsumerWidget {
       floatingActionButton: Padding(
         padding: const EdgeInsets.only(bottom: 120),
         child: FloatingActionButton(
-          onPressed: () => context.push('/transaction-form'),
+          onPressed: () {
+            HapticFeedback.lightImpact();
+            context.push('/transaction-form');
+          },
           backgroundColor: CredoColors.accentViolet,
           child: const Icon(Icons.add, color: Colors.white),
         ),
@@ -72,10 +77,10 @@ class _DashboardBody extends ConsumerWidget {
         ),
         slivers: [
           // ── Header ──────────────────────────────────────────────────
-          SliverToBoxAdapter(child: _Header(rateAsync: rateAsync)),
+          SliverToBoxAdapter(child: _Header(rateAsync: rateAsync).animate().fade(duration: 400.ms).slideY(begin: 0.1)),
 
           // ── Expense Overview Chart ──────────────────────────────────
-          SliverToBoxAdapter(child: _ExpenseOverviewChart(analyticsAsync: analyticsAsync)),
+          SliverToBoxAdapter(child: _ExpenseOverviewChart(analyticsAsync: analyticsAsync).animate().fade(duration: 400.ms, delay: 100.ms).slideY(begin: 0.1)),
 
         // ── Credit Score Card ────────────────────────────────────────
         SliverToBoxAdapter(
@@ -100,7 +105,7 @@ class _DashboardBody extends ConsumerWidget {
                   );
                 },
               ),
-            ),
+            ).animate().fade(duration: 400.ms, delay: 200.ms).slideY(begin: 0.1),
           ),
         ),
 
@@ -109,15 +114,18 @@ class _DashboardBody extends ConsumerWidget {
           child: _SectionHeader(
             title: 'My Accounts',
             actionLabel: 'See all',
-            onAction: () => context.go('/accounts'),
-          ),
+            onAction: () {
+              HapticFeedback.selectionClick();
+              context.go('/accounts');
+            },
+          ).animate().fade(duration: 400.ms, delay: 300.ms).slideY(begin: 0.1),
         ),
         SliverToBoxAdapter(
           child: accountsAsync.when(
             loading: () => const AccountCardShimmer(),
             error: (e, _) => const SizedBox(height: 80),
             data: (accounts) => _AccountsRow(accounts: accounts),
-          ),
+          ).animate().fade(duration: 400.ms, delay: 350.ms).slideY(begin: 0.1),
         ),
 
         // ── Savings Goals ────────────────────────────────────────────
@@ -125,8 +133,11 @@ class _DashboardBody extends ConsumerWidget {
           child: _SectionHeader(
             title: 'Savings Goals',
             actionLabel: 'See all',
-            onAction: () => context.push('/goals'),
-          ),
+            onAction: () {
+              HapticFeedback.selectionClick();
+              context.push('/goals');
+            },
+          ).animate().fade(duration: 400.ms, delay: 400.ms).slideY(begin: 0.1),
         ),
         SliverToBoxAdapter(
           child: goalsAsync.when(
@@ -170,7 +181,7 @@ class _DashboardBody extends ConsumerWidget {
                 ),
               );
             },
-          ),
+          ).animate().fade(duration: 400.ms, delay: 450.ms).slideY(begin: 0.1),
         ),
 
         // ── Recent Transactions ───────────────────────────────────────
@@ -178,8 +189,11 @@ class _DashboardBody extends ConsumerWidget {
           child: _SectionHeader(
             title: 'Recent',
             actionLabel: 'See all',
-            onAction: () => context.go('/transactions'),
-          ),
+            onAction: () {
+              HapticFeedback.selectionClick();
+              context.go('/transactions');
+            },
+          ).animate().fade(duration: 400.ms, delay: 500.ms).slideY(begin: 0.1),
         ),
         txnAsync.when(
           loading: () => SliverList.builder(
@@ -207,11 +221,14 @@ class _DashboardBody extends ConsumerWidget {
                 return TransactionRow(
                   transaction: txn,
                   showDivider: i < recent.length - 1,
-                  onTap: () => context.push(
-                    '/transaction/${txn.id}',
-                    extra: txn,
-                  ),
-                );
+                  onTap: () {
+                    HapticFeedback.lightImpact();
+                    context.push(
+                      '/transaction/${txn.id}',
+                      extra: txn,
+                    );
+                  },
+                ).animate().fade(duration: 400.ms, delay: (550 + i * 50).ms).slideY(begin: 0.1);
               },
             );
           },

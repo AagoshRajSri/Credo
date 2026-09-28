@@ -1,5 +1,6 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/theme/color_tokens.dart';
 import '../../core/constants/app_constants.dart';
@@ -208,20 +209,33 @@ class _SummaryCard extends StatelessWidget {
 }
 
 // ── Donut chart ───────────────────────────────────────────────────────────
-class _DonutChart extends StatelessWidget {
+class _DonutChart extends StatefulWidget {
   const _DonutChart({required this.analytics});
   final AnalyticsResult analytics;
 
   @override
+  State<_DonutChart> createState() => _DonutChartState();
+}
+
+class _DonutChartState extends State<_DonutChart> {
+  int touchedIndex = -1;
+
+  @override
   Widget build(BuildContext context) {
-    final breakdown = analytics.categoryBreakdown.take(6).toList();
+    final breakdown = widget.analytics.categoryBreakdown.take(6).toList();
     const palette = CredoColors.chartPalette;
+
+    final isSliceTouched = touchedIndex != -1 && touchedIndex < breakdown.length;
+    final centerAmount = isSliceTouched
+        ? breakdown[touchedIndex].total
+        : widget.analytics.totalSpend;
+    final centerLabel = isSliceTouched
+        ? breakdown[touchedIndex].category.displayName
+        : 'Spent';
 
     return RepaintBoundary(
       child: Container(
-        margin: const EdgeInsets.symmetric(
-          horizontal: AppConstants.spacingM,
-        ),
+        margin: const EdgeInsets.symmetric(horizontal: AppConstants.spacingM),
         padding: const EdgeInsets.all(AppConstants.spacingM),
         decoration: BoxDecoration(
           color: CredoColors.surfaceVariant,
@@ -231,21 +245,40 @@ class _DonutChart extends StatelessWidget {
           children: [
             // ── Donut + center label ─────────────────────────────
             SizedBox(
-              height: 200,
+              height: 220,
               child: Semantics(
-                label: 'Donut chart showing spending breakdown. Top category is ${breakdown.first.category.displayName} at \$${breakdown.first.total.toStringAsFixed(0)}.',
+                label: 'Donut chart showing spending breakdown.',
                 child: Stack(
                   alignment: Alignment.center,
                   children: [
                     PieChart(
                       PieChartData(
+                        pieTouchData: PieTouchData(
+                          touchCallback: (FlTouchEvent event, pieTouchResponse) {
+                            setState(() {
+                              if (!event.isInterestedForInteractions ||
+                                  pieTouchResponse == null ||
+                                  pieTouchResponse.touchedSection == null) {
+                                touchedIndex = -1;
+                                return;
+                              }
+                              final newIndex = pieTouchResponse.touchedSection!.touchedSectionIndex;
+                              if (newIndex != touchedIndex && newIndex != -1) {
+                                HapticFeedback.lightImpact();
+                              }
+                              touchedIndex = newIndex;
+                            });
+                          },
+                        ),
                         sections: breakdown.asMap().entries.map((e) {
                           final i = e.key;
                           final cat = e.value;
+                          final isTouched = i == touchedIndex;
+                          final radius = isTouched ? 64.0 : 56.0;
                           return PieChartSectionData(
                             value: cat.total,
                             color: palette[i % palette.length],
-                            radius: 56,
+                            radius: radius,
                             title: '',
                             showTitle: false,
                           );
@@ -259,12 +292,13 @@ class _DonutChart extends StatelessWidget {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Text(
-                          'Spent',
-                          style: context.textTheme.bodySmall
-                              ?.copyWith(color: CredoColors.textSecondary),
+                          centerLabel,
+                          style: context.textTheme.bodySmall?.copyWith(
+                            color: CredoColors.textSecondary,
+                          ),
                         ),
                         Text(
-                          CredoFormatters.rupeesCompact(analytics.totalSpend),
+                          CredoFormatters.rupeesCompact(centerAmount),
                           style: context.textTheme.titleMedium?.copyWith(
                             color: CredoColors.textPrimary,
                             fontWeight: FontWeight.w700,
@@ -284,13 +318,17 @@ class _DonutChart extends StatelessWidget {
               children: breakdown.asMap().entries.map((e) {
                 final i = e.key;
                 final cat = e.value;
-                final pct =
-                    ((cat.total / analytics.totalSpend) * 100)
-                        .toStringAsFixed(0);
-                return _LegendItem(
-                  color: palette[i % palette.length],
-                  label: cat.category.displayName.split(' ').first,
-                  pct: '$pct%',
+                final pct = ((cat.total / widget.analytics.totalSpend) * 100).toStringAsFixed(0);
+                final isTouched = i == touchedIndex;
+                
+                return AnimatedOpacity(
+                  duration: const Duration(milliseconds: 200),
+                  opacity: touchedIndex == -1 || isTouched ? 1.0 : 0.4,
+                  child: _LegendItem(
+                    color: palette[i % palette.length],
+                    label: cat.category.displayName.split(' ').first,
+                    pct: '$pct%',
+                  ),
                 );
               }).toList(),
             ),
